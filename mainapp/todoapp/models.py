@@ -14,9 +14,9 @@ class Project(models.Model):
 
 
 class Todo(models.Model):
-    project = models.ForeignKey(Project, models.PROTECT)
+    project = models.ForeignKey(Project, models.PROTECT, to_field='name')
     text = models.TextField()
     create = models.DateTimeField(auto_now=False, auto_now_add=True)
     update = models.DateTimeField(auto_now=True, auto_now_add=False)
-    creator = models.ForeignKey(User, on_delete=models.CASCADE)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, to_field='username')
     active = models.BooleanField(default=True)
