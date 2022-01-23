@@ -6,7 +6,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ['id', 'name', 'users', 'link']
+        fields = ['id', 'name', 'developer', 'users', 'link']
 
 
 class TodoSerializer(serializers.ModelSerializer):
