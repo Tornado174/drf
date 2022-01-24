@@ -18,6 +18,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from usersapp.views import UsersView, SingleUserView
 from todoapp.views import ProjectLimitOffsetPaginationViewSet, TodoLimitOffsetPaginationViewSet
+from rest_framework.authtoken.views import obtain_auth_token
 
 
 router = DefaultRouter()
@@ -32,4 +33,5 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path('users/', UsersView.as_view()),
     path('users/<str:pk>', SingleUserView.as_view()),
+    path('api-token-auth/', obtain_auth_token)
 ]
