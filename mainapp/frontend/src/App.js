@@ -12,6 +12,18 @@ import Footer from "./components/Footer";
 import MenuItemList from "./components/Menu";
 import {BrowserRouter as Router, Route, Redirect, Switch, Link} from "react-router-dom";
 import ProjectTodoList from "./components/ProjectTodo";
+import LoginForm from "./components/Auth.js";
+import Cookies from 'universal-cookie';
+
+
+
+const MainPage = () => {
+    return (
+        <div>
+            <h1>Главная</h1>
+        </div>
+    )
+}
 
 
 const NotFound404 = ({ location }) => {
@@ -32,47 +44,79 @@ class App extends React.Component {
            'users': [],
            'projects': [],
            'todos': [],
-           'menu': []
+           'menu': [],
+           'token': ''
        }
    }
 
+   set_token(token) {
+       const cookies = new Cookies()
+       cookies.set('token', token)
+       this.setState({'token': token}, ()=>this.load_data())
+   }
+
+   is_autenticated() {
+       return this.state.token != ''
+   }
+
+   logout() {
+       this.set_token('')
+   }
+
+   get_token_from_storage() {
+       const cookies = new Cookies()
+       const token = cookies.get('token')
+       this.setState({'token': token}, ()=>this.load_data())
+   }
+
+   get_token(username, password) {
+       axios.post('http://127.0.0.1:8000/api-token-auth/', {username: username, password: password})
+       .then(response => {
+           this.set_token(response.data['token'])
+       }).catch(error => alert('Неверный логин или пароль'))
+   }
+
+   get_headers() {
+       let headers = {
+           'Content-Type': 'application/json'
+       }
+       if (this.is_autenticated())
+       {
+           headers['Authorization'] = 'Token ' + this.state.token
+       }
+       return headers
+   }
+
+   load_data() {
+       const headers = this.get_headers()
+       axios.get('http://127.0.0.1:8000/users', {headers})
+           .then(response => {
+               this.setState({
+                   users: response.data.results,
+                   'menu': [
+                       {
+                           'name': 'Main',
+                           'url': 'http://localhost:3000'
+                       }
+                   ]
+               })
+           }).catch(error => console.log(error))
+
+       axios.get('http://127.0.0.1:8000/projects', {headers})
+           .then(response => {
+               this.setState({projects: response.data.results})
+           }).catch(error => console.log(error))
+
+       axios.get('http://127.0.0.1:8000/todo', {headers})
+           .then(response => {
+               this.setState({todos: response.data.results})
+           }).catch(error => console.log(error))
+   }
+
+
+
     componentDidMount() {
-       axios.get('http://127.0.0.1:8000/users')
-           .then(response => {
-               const users = response.data
-                   this.setState(
-                   {
-                       'users': users.results,
-                       'menu': [
-                           {
-                               'name': 'Главная',
-                               'url': 'http://localhost:3000'
-                           }
-                       ]
-                   }
-               )
-           }).catch(error => console.log(error));
-
-       axios.get('http://127.0.0.1:8000/projects')
-           .then(response => {
-               const projects = response.data
-                   this.setState(
-                   {
-                       'projects': projects.results,
-                   }
-               )
-           }).catch(error => console.log(error));
-
-       axios.get('http://127.0.0.1:8000/todo')
-           .then(response => {
-               const todos = response.data
-                   this.setState(
-                   {
-                       'todos': todos.results,
-                   }
-               )
-           }).catch(error => console.log(error));
-
+       this.get_token_from_storage()
     }
 
    render () {
@@ -86,7 +130,7 @@ class App extends React.Component {
                         <nav>
                             <ul>
                                 <li>
-                                    <Link to='/'>Users</Link>
+                                    <Link to='/users'>Users</Link>
                                 </li>
                                 <li>
                                     <Link to='/projects'>Projects</Link>
@@ -94,19 +138,27 @@ class App extends React.Component {
                                 <li>
                                     <Link to='/todo'>ToDo</Link>
                                 </li>
+                                <li>
+                                    {this.is_autenticated() ? <button onClick={()=>this.logout()}>Logout</button>
+                                        : <Link to='/login'>Login</Link>}
+                                </li>
                             </ul>
                         </nav>
                         <Switch>
-                            <Route exact path='/' component={() => <UserList items={this.state.users} />} />
+                            <Route exact path='/' component={MainPage} />
+                            <Route exact path='/users' component={() => <UserList items={this.state.users} />} />
                             <Route exact path='/projects' component={() => <ProjectList items={this.state.projects}/>} />
                             <Route exact path='/todo' component={() => <TodoList items={this.state.todos}/>} />
+                            <Route exact path='/login'>
+                                <LoginForm get_token={(username, password) => this.get_token(username, password)} />
+                            </Route>
                             <Route path='/project/:project'>
                                 <ProjectTodoList items={this.state.todos} />
                             </Route>
                             <Route path='/user/:developer'>
                                 <UserProjectList items={this.state.projects} />
                             </Route>
-                            <Redirect from='/users' to='/' />
+                            <Redirect to='/' from='/main' />
                             <Route component={NotFound404} />
                         </Switch>
                     </Router>
