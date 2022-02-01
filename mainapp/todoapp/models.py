@@ -15,6 +15,7 @@ class Project(models.Model):
 
 
 class Todo(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     project = models.ForeignKey(Project, models.PROTECT, to_field='name')
     text = models.TextField()
     create = models.DateTimeField(auto_now=False, auto_now_add=True)
