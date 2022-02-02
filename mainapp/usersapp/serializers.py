@@ -2,7 +2,7 @@ from rest_framework.serializers import HyperlinkedModelSerializer
 from .models import User
 
 
-class UserModelSerializer(HyperlinkedModelSerializer):
+class UserModelSerializerBase(HyperlinkedModelSerializer):
     class Meta:
         model = User
         fields = [
@@ -29,6 +29,19 @@ class UserModelSerializer(HyperlinkedModelSerializer):
                 setattr(instance, attr, value)
         instance.save()
         return instance
+
+
+class UserModelSerializer(HyperlinkedModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'id',
+            'username',
+            'email',
+            'password',
+            'is_superuser',
+            'is_staff',
+        ]
 
 
 class SingleUserModelSerializer(HyperlinkedModelSerializer):
