@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework.authtoken',
     'drf_yasg',
+    'graphene_django',
     # My
     'usersapp',
     'todoapp',
@@ -156,4 +157,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
+}
+
+GRAPHENE = {
+    'SCHEMA': 'mainapp.schema.schema'
 }
