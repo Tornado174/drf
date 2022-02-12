@@ -17,7 +17,7 @@ class TodoLimitOffsetPagination(LimitOffsetPagination):
 
 class ProjectLimitOffsetPaginationViewSet(ModelViewSet):
     # permission_classes = [permissions.IsAuthenticated]
-    queryset = Project.objects.all()
+    queryset = Project.active.all()
     serializer_class = ProjectSerializer
     pagination_class = ProjectLimitOffsetPagination
     filterset_class = ProjectFilters
@@ -27,16 +27,22 @@ class ProjectLimitOffsetPaginationViewSet(ModelViewSet):
             return ProjectSerializer
         return ProjectSerializerBase
 
+    def destroy(self, request, *args, **kwargs):
+        project = self.get_object()
+        project.is_active = False
+        project.save()
+        return Response(status=status.HTTP_200_OK)
+
 
 class TodoLimitOffsetPaginationViewSet(ModelViewSet):
     # permission_classes = [permissions.IsAuthenticated]
-    queryset = Todo.objects.all()
+    queryset = Todo.active.all()
     serializer_class = TodoSerializer
     pagination_class = TodoLimitOffsetPagination
     filterset_class = TodoFilters
 
     def destroy(self, request, *args, **kwargs):
         todo = self.get_object()
-        todo.active = False
+        todo.is_active = False
         todo.save()
         return Response(status=status.HTTP_200_OK)
